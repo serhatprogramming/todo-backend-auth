@@ -26,4 +26,12 @@ usersRouter.post("/", async (req, res) => {
   res.status(201).json(savedUser);
 });
 
+// GET route handler to retrieve all users
+usersRouter.get("/", async (req, res) => {
+  // Fetch all users from the database using User.find({})
+  const users = await User.find({});
+  // Respond with a JSON array containing the user data
+  res.json(users);
+});
+
 module.exports = usersRouter;
