@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const config = require("./utils/config");
 const logger = require("./utils/logger");
 const todosRouter = require("./controllers/todos");
+const usersRouter = require("./controllers/users");
 const middleware = require("./utils/middleware");
 // mongoose config and connection
 mongoose.set("strictQuery", false);
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use(express.static("build"));
 app.use(middleware.requestLogger);
 app.use("/api/todos", todosRouter);
+app.use("/api/users", usersRouter);
 app.use(middleware.errorHandler);
 
 module.exports = app;
