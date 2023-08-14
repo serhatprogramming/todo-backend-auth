@@ -5,7 +5,7 @@ const Todo = require("../models/todo");
 const User = require("../models/user");
 
 todosRouter.get("/", async (req, res) => {
-  const todos = await Todo.find({}).populate("user");
+  const todos = await Todo.find({});
   res.json(todos);
 });
 
@@ -23,6 +23,10 @@ todosRouter.delete("/:id", async (req, res) => {
   if (!user) {
     return res.status(404).json({ error: "user not found" });
   }
+  const ownerCheck = (await Todo.findById(req.params.id)).user;
+  if (req.body.userId !== ownerCheck.toString()) {
+    return res.status(401).json({ error: "unauthorized access" });
+  }
   const todo = await Todo.findByIdAndRemove(req.params.id);
   if (todo) {
     res
@@ -32,7 +36,6 @@ todosRouter.delete("/:id", async (req, res) => {
     user.todos = user.todos.filter(
       (todo) => todo._id.toString() !== req.params.id
     );
-
     user.save();
   } else {
     res.status(404).json({ error: "The todo not found." });
@@ -40,24 +43,23 @@ todosRouter.delete("/:id", async (req, res) => {
 });
 
 todosRouter.post("/", async (req, res) => {
-  //
+  // Destructure relevant data including userId
   const { task, done, userId } = req.body;
-  // if (!task) {
-  //   return res.status(400).json({ error: "task is required" });
-  // }
-  //
+  // Find the user with the provided userId
   const user = await User.findById(userId);
   if (!user) {
     return res.status(404).json({ error: "user not found" });
   }
-  //
+
+  // Create a new todo instance linked to the user
   const todo = new Todo({ task: task, done: done || false, user: user.id });
-  //
+  // Save the todo to the database
   const savedTodo = await todo.save();
-  //
+  // Update the user's todos array with the new todo's id
   user.todos = [...user.todos, savedTodo._id];
-  //
+  // Save the updated user's information
   await user.save();
+  // Respond with a 201 status code and the saved todo
   res.status(201).json(savedTodo);
 });
 
