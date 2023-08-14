@@ -3,7 +3,15 @@ const logger = require("./logger");
 const requestLogger = (req, res, next) => {
   logger.log(`Request Method: ${req.method}`);
   logger.log(`Request Path: ${req.path}`);
-  Object.keys(req.body).length !== 0 && logger.log(`Request Body:`, req.body);
+
+  // Check if the request body contains a "password" field
+  const maskedRequestBody = { ...req.body };
+  if (maskedRequestBody.password !== undefined) {
+    maskedRequestBody.password = "********"; // Hide password
+  }
+
+  Object.keys(maskedRequestBody).length !== 0 &&
+    logger.log(`Request Body:`, maskedRequestBody);
   logger.log("--------------------------------");
   next();
 };
