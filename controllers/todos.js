@@ -1,8 +1,17 @@
 // controllers/todos.js
+const jwt = require("jsonwebtoken");
 const express = require("express");
 const todosRouter = express.Router();
 const Todo = require("../models/todo");
 const User = require("../models/user");
+
+const extractTokenFromRequest = (request) => {
+  const authHeader = request.get("authorization");
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    return authHeader.replace("Bearer ", "");
+  }
+  return null;
+};
 
 todosRouter.get("/", async (req, res) => {
   const todos = await Todo.find({}).populate("user", { username: 1, name: 1 });
@@ -43,10 +52,17 @@ todosRouter.delete("/:id", async (req, res) => {
 });
 
 todosRouter.post("/", async (req, res) => {
-  // Destructure relevant data including userId
-  const { task, done, userId } = req.body;
-  // Find the user with the provided userId
-  const user = await User.findById(userId);
+  const { task, done } = req.body;
+
+  const tokenPayload = jwt.verify(
+    extractTokenFromRequest(req),
+    process.env.PRIVATE_KEY
+  );
+  if (!tokenPayload.id) {
+    return response.status(401).json({ error: "invalid token" });
+  }
+  // Find the user with the id in the token payload
+  const user = await User.findById(tokenPayload.id);
   if (!user) {
     return res.status(404).json({ error: "user not found" });
   }
