@@ -5,7 +5,7 @@ const Todo = require("../models/todo");
 const User = require("../models/user");
 
 todosRouter.get("/", async (req, res) => {
-  const todos = await Todo.find({});
+  const todos = await Todo.find({}).populate("user", { username: 1, name: 1 });
   res.json(todos);
 });
 

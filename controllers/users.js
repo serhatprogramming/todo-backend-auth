@@ -28,9 +28,7 @@ usersRouter.post("/", async (req, res) => {
 
 // GET route handler to retrieve all users
 usersRouter.get("/", async (req, res) => {
-  // Fetch all users from the database using User.find({})
-  const users = await User.find({});
-  // Respond with a JSON array containing the user data
+  const users = await User.find({}).populate("todos", { task: 1, done: 1 });
   res.json(users);
 });
 
